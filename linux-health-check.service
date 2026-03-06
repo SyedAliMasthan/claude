@@ -1,0 +1,38 @@
+[Unit]
+Description=Linux Daily Health Check - Banking Infrastructure
+Documentation=https://internal.wiki/linux-health-check
+After=network-online.target syslog.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/linux_health_check.sh
+User=root
+Group=root
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+
+# Security hardening
+ProtectSystem=strict
+ReadWritePaths=/root/Linux_health /var/log/sa /tmp
+ProtectHome=read-only
+NoNewPrivileges=false
+PrivateTmp=true
+
+# Resource limits (prevent the check itself from impacting production)
+CPUQuota=30%
+MemoryMax=512M
+TimeoutStartSec=600
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=linux-health-check
+
+# Audit trail - important for banking compliance
+Environment="HEALTH_CHECK_VERSION=2.0"
+Environment="COMPLIANCE_MODE=banking"
+
+[Install]
+WantedBy=multi-user.target

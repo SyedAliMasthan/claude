@@ -1,0 +1,22 @@
+[Unit]
+Description=Daily Linux Health Check Timer - Banking Infrastructure
+Documentation=https://internal.wiki/linux-health-check
+
+[Timer]
+# Run daily at 06:00 AM (before business hours)
+OnCalendar=*-*-* 06:00:00
+
+# If system was off at scheduled time, run on next boot
+Persistent=true
+
+# Add random delay up to 5 minutes to avoid thundering herd on many servers
+RandomizedDelaySec=300
+
+# Accuracy - 1 minute is acceptable
+AccuracySec=1min
+
+# Identifier for audit
+Unit=linux-health-check.service
+
+[Install]
+WantedBy=timers.target
