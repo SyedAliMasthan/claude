@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OCP DC Prod Cluster Report — 03-03-2026 — Morning</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --ib-navy: #002B5C;
+    --ib-blue: #003F88;
+    --ib-accent: #0066CC;
+    --ib-gold: #C7923E;
+    --ib-light-gold: #F5E6CC;
+    --green-bg: #E8F5E9;
+    --green-text: #1B5E20;
+    --green-border: #4CAF50;
+    --amber-bg: #FFF8E1;
+    --amber-text: #E65100;
+    --amber-border: #FF9800;
+    --red-bg: #FFEBEE;
+    --red-text: #B71C1C;
+    --red-border: #F44336;
+    --blue-bg: #E3F2FD;
+    --blue-text: #0D47A1;
+    --blue-border: #2196F3;
+    --section-bg: #FAFBFC;
+    --border: #E0E4E8;
+    --text-primary: #1A1A2E;
+    --text-secondary: #4A5568;
+    --bg-page: #F4F6F9;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    font-size: 14px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page-wrapper {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px 20px;
+  }
+
+  /* ── HEADER ── */
+  .report-header {
+    background: linear-gradient(135deg, var(--ib-navy) 0%, var(--ib-blue) 60%, var(--ib-accent) 100%);
+    color: #fff;
+    padding: 28px 32px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0,43,92,0.25);
+  }
+  .report-header::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 180px; height: 180px;
+    background: rgba(199,146,62,0.12);
+    border-radius: 50%;
+  }
+  .report-header::after {
+    content: '';
+    position: absolute;
+    bottom: -30px; left: 30%;
+    width: 120px; height: 120px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 50%;
+  }
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    position: relative;
+    z-index: 1;
+  }
+  .header-title h1 {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    margin-bottom: 4px;
+  }
+  .header-title .gold-line {
+    width: 48px;
+    height: 3px;
+    background: var(--ib-gold);
+    border-radius: 2px;
+    margin: 8px 0 10px 0;
+  }
+  .header-meta {
+    font-size: 13px;
+    opacity: 0.85;
+    line-height: 1.7;
+  }
+  .header-meta span { opacity: 0.6; }
+  .header-badge {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 8px;
+    padding: 10px 16px;
+    text-align: center;
+    backdrop-filter: blur(8px);
+    position: relative;
+    z-index: 1;
+  }
+  .header-badge .badge-label { font-size: 11px; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.5px; }
+  .header-badge .badge-value { font-size: 14px; font-weight: 600; margin-top: 2px; }
+
+  /* ── GREETING ── */
+  .greeting {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--ib-gold);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+  .greeting b { color: var(--ib-navy); }
+
+  /* ── SUMMARY CARDS ── */
+  .summary-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .summary-card {
+    border-radius: 10px;
+    padding: 16px 18px;
+    text-align: center;
+    border: 1px solid;
+    position: relative;
+    overflow: hidden;
+  }
+  .summary-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .summary-card .card-num { font-size: 28px; font-weight: 700; line-height: 1.2; }
+  .summary-card .card-label { font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.4px; margin-top: 2px; }
+  .summary-card.pass { background: var(--green-bg); border-color: #C8E6C9; color: var(--green-text); }
+  .summary-card.pass::before { background: var(--green-border); }
+  .summary-card.warn { background: var(--amber-bg); border-color: #FFE0B2; color: var(--amber-text); }
+  .summary-card.warn::before { background: var(--amber-border); }
+  .summary-card.fail { background: var(--red-bg); border-color: #FFCDD2; color: var(--red-text); }
+  .summary-card.fail::before { background: var(--red-border); }
+  .summary-card.info { background: var(--blue-bg); border-color: #BBDEFB; color: var(--blue-text); }
+  .summary-card.info::before { background: var(--blue-border); }
+
+  /* ── CHECKLIST SECTIONS ── */
+  .checklist-section {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 18px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    transition: box-shadow 0.2s;
+  }
+  .checklist-section:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    background: var(--section-bg);
+    border-bottom: 1px solid var(--border);
+  }
+  .section-num {
+    background: var(--ib-navy);
+    color: #fff;
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .section-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ib-navy);
+  }
+  .section-badge {
+    margin-left: auto;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .section-badge.ok { background: var(--green-bg); color: var(--green-text); }
+  .section-badge.warning { background: var(--amber-bg); color: var(--amber-text); }
+  .section-badge.critical { background: var(--red-bg); color: var(--red-text); }
+
+  .section-body {
+    padding: 0;
+  }
+  .section-body pre {
+    font-family: 'JetBrains Mono', 'Consolas', 'Courier New', monospace;
+    font-size: 11.5px;
+    line-height: 1.55;
+    padding: 16px 20px;
+    margin: 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow-x: auto;
+    color: #2D3748;
+    background: #fff;
+  }
+
+  /* Highlight specific keywords in pre blocks */
+  .highlight-ready { color: var(--green-text); font-weight: 500; }
+  .highlight-true { color: var(--green-text); }
+  .highlight-false { color: var(--red-text); }
+
+  /* ── ALERTS SECTION ── */
+  .alert-section .section-header { background: #FFF5F5; }
+  .alert-section .section-num { background: var(--red-border); }
+  .alert-item {
+    padding: 10px 20px;
+    border-bottom: 1px solid #FEE2E2;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .alert-item:last-child { border-bottom: none; }
+  .alert-severity {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .alert-severity.critical { background: var(--red-bg); color: var(--red-text); border: 1px solid #FFCDD2; }
+  .alert-severity.warning { background: var(--amber-bg); color: var(--amber-text); border: 1px solid #FFE0B2; }
+  .alert-text { color: #4A5568; line-height: 1.5; }
+  .alert-name { font-weight: 600; color: var(--text-primary); }
+
+  /* ── FOOTER ── */
+  .report-footer {
+    text-align: center;
+    padding: 20px;
+    color: var(--text-secondary);
+    font-size: 12px;
+    border-top: 1px solid var(--border);
+    margin-top: 12px;
+  }
+  .report-footer .sig { color: var(--ib-navy); font-weight: 600; }
+
+  /* ── Print styles ── */
+  @media print {
+    body { background: #fff; }
+    .page-wrapper { padding: 0; }
+    .checklist-section { break-inside: avoid; }
+    .report-header { box-shadow: none; }
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 700px) {
+    .summary-row { grid-template-columns: repeat(2, 1fr); }
+    .header-top { flex-direction: column; gap: 12px; }
+    .header-badge { align-self: flex-start; }
+  }
+</style>
+</head>
+<body>
+<div class="page-wrapper">
+
+  <!-- HEADER -->
+  <div class="report-header">
+    <div class="header-top">
+      <div class="header-title">
+        <h1>OCP DC Prod Cluster Report</h1>
+        <div class="gold-line"></div>
+        <div class="header-meta">
+          Checklist for applications on DC-Production Cluster<br>
+          <span>API:</span> https://api.dcprod.ocp.ib:6443<br>
+          <span>OCP Version:</span> 4.14.12 &nbsp;|&nbsp; <span>Channel:</span> stable-4.14<br>
+          <span>Generated:</span> 03-03-2026 08:56:05 IST — Morning
+        </div>
+      </div>
+      <div class="header-badge">
+        <div class="badge-label">Cluster Status</div>
+        <div class="badge-value">🟢 HEALTHY</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GREETING -->
+  <div class="greeting">
+    Dear Team,<br><br>
+    Please find below <b>OMNI</b>, <b>DLP</b>, and <b>CMS</b> Daily Health Check Report for <b>Indian Bank DC PROD</b> cluster:
+  </div>
+
+  <!-- SUMMARY -->
+  <div class="summary-row">
+    <div class="summary-card pass">
+      <div class="card-num">142</div>
+      <div class="card-label">Passed</div>
+    </div>
+    <div class="summary-card warn">
+      <div class="card-num">5</div>
+      <div class="card-label">Warnings</div>
+    </div>
+    <div class="summary-card fail">
+      <div class="card-num">0</div>
+      <div class="card-label">Failures</div>
+    </div>
+    <div class="summary-card info">
+      <div class="card-num">38</div>
+      <div class="card-label">Info</div>
+    </div>
+  </div>
+
+  <!-- 1. NODE STATUS -->
+  <div class="checklist-section">
+    <div class="section-header">
+      <div class="section-num">1</div>
+      <div class="section-title">Node Status</div>
+      <span class="section-badge ok">All Ready</span>
+    </div>
+    <div class="section-body">
+      <pre>NAME                          STATUS   ROLES                  AGE    VERSION           INTERNAL-IP     EXTERNAL-IP   OS-IMAGE                                                        KERNEL-VERSION                  CONTAINER-RUNTIME
+master-0.dcprod.ocp.ib        Ready    control-plane,master   287d   v1.27.10+c79e5e2  10.100.50.11    &lt;none&gt;        Red Hat Enterprise Linux CoreOS 414.92.202402200743-0 (Plow)     5.14.0-284.52.1.el9_2.x86_64   cri-o://1.27.3-2.rhaos4.14
+master-1.dcprod.ocp.ib        Ready    control-plane,master   287d   v1.27.10+c79e5e2  10.100.50.12    &lt;none&gt;        Red Hat Enterprise Linux CoreOS 414.92.202402200743-0 (Plow)     5.14.0-284.52.1.el9_2.x86_64   cri-o://1.27.3-2.rhaos4.14
+master-2.dcprod.ocp.ib        Ready    control-plane,master   287d   v1.27.10+c79e5e2  10.100.50.13    &lt;none&gt;        Red Hat Enterprise Linux CoreOS 414.92.202402200743-0 (Plow)     5.14.0-284.52.1.el9_2.x86_64   cri-o://1.27.3-2.rhaos4.14
+infra-0.dcprod.ocp.ib         Ready    infra,worker           287d   v1.27.10+c79e5e2  10.100.50.21    &lt;none&gt;        Red Hat Enterprise Linux CoreOS 414.92.202402200743-0 (Plow)     5.14.0-284.52.1.el9_2.x86_64   cri-o://1.27.3-2.rhaos4.14
+infra-1.dcprod.ocp.ib         Ready    infra,worker           287d   v1.27.10+c79e5e2  10.100.50.22    &lt;none&gt;        Red Hat Enterprise Linux CoreOS 414.92.202402200743-0 (Plow)     5.14.0-284.52.1.el9_2.x86_64   cri-o://1.27.3-2.rhaos4.14
+infra-2.dcprod.ocp.ib         Ready    infra,worker           287d   v1.27.10+c79e5e2  10.100.50.23    &lt;none&gt;        Red Hat Enterprise Linux CoreOS 414.92.202402200743-0 (Plow)     5.14.0-284.52.1.el9_2.x86_64   cri-o://1.27.3-2.rhaos4.14
+worker-0.dcprod.ocp.ib        Ready    worker                 287d   v1.27.10+c79e5e2  10.100.50.31    &lt;none&gt;        Red Hat Enterprise Linux CoreOS 414.92.202402200743-0 (Plow)     5.14.0-284.52.1.el9_2.x86_64   cri-o://1.27.3-2.rhaos4.14
+worker-1.dcprod.ocp.ib        Ready    worker                 287d   v1.27.10+c79e5e2  10.100.50.32    &lt;none&gt;        Red Hat Enterprise Linux CoreOS 414.92.202402200743-0 (Plow)     5.14.0-284.52.1.el9_2.x86_64   cri-o://1.27.3-2.rhaos4.14
+worker-2.dcprod.ocp.ib        Ready    worker                 287d   v1.27.10+c79e5e2  10.100.50.33    &lt;none&gt;        Red Hat Enterprise Linux CoreOS 414.92.202402200743-0 (Plow)     5.14.0-284.52.1.el9_2.x86_64   cri-o://1.27.3-2.rhaos4.14</pre>
+    </div>
+  </div>
+
+  <!-- 2. NODE UTILIZATION -->
+  <div class="checklist-section">
+    <div class="section-header">
+      <div class="section-num">2</div>
+      <div class="section-title">Node Utilization</div>
+      <span class="section-badge ok">Normal</span>
+    </div>
+    <div class="section-body">
+      <pre>NAME                          CPU(cores)   CPU%   MEMORY(bytes)   MEMORY%
+master-0.dcprod.ocp.ib        1247m        15%    12480Mi         40%
+master-1.dcprod.ocp.ib        1102m        13%    11890Mi         38%
+master-2.dcprod.ocp.ib        1340m        16%    13100Mi         42%
+infra-0.dcprod.ocp.ib         892m         11%    8420Mi          26%
+infra-1.dcprod.ocp.ib         1024m        12%    9180Mi          28%
+infra-2.dcprod.ocp.ib         780m         9%     7620Mi          23%
+worker-0.dcprod.ocp.ib        3420m        42%    18940Mi         59%
+worker-1.dcprod.ocp.ib        3890m        48%    21200Mi         66%
+worker-2.dcprod.ocp.ib        2980m        37%    17600Mi         55%</pre>
+    </div>
+  </div>
+
+  <!-- 3. CLUSTER OPERATORS -->
+  <div class="checklist-section">
+    <div class="section-header">
+      <div class="section-num">3</div>
+      <div class="section-title">Cluster Operators (oc get co)</div>
+      <span class="section-badge ok">All Available</span>
+    </div>
+    <div class="section-body">
+      <pre>NAME                                       VERSION   AVAILABLE   PROGRESSING   DEGRADED   SINCE   MESSAGE
+authentication                             4.14.12   True        False         False      14d
+baremetal                                  4.14.12   True        False         False      287d
+cloud-controller-manager                   4.14.12   True        False         False      287d
+cloud-credential                           4.14.12   True        False         False      287d
+cluster-autoscaler                         4.14.12   True        False         False      287d
+config-operator                            4.14.12   True        False         False      287d
+console                                    4.14.12   True        False         False      14d
+csi-snapshot-controller                    4.14.12   True        False         False      287d
+dns                                        4.14.12   True        False         False      287d
+etcd                                       4.14.12   True        False         False      287d
+image-registry                             4.14.12   True        False         False      42d
+ingress                                    4.14.12   True        False         False      287d
+insights                                   4.14.12   True        False         False      287d
+kube-apiserver                             4.14.12   True        False         False      287d
+kube-controller-manager                    4.14.12   True        False         False      287d
+kube-scheduler                             4.14.12   True        False         False      287d
+kube-storage-version-migrator              4.14.12   True        False         False      287d
+machine-api                                4.14.12   True        False         False      287d
+machine-approver                           4.14.12   True        False         False      287d
+machine-config                             4.14.12   True        False         False      14d
+marketplace                                4.14.12   True        False         False      287d
+monitoring                                 4.14.12   True        False         False      14d
+network                                    4.14.12   True        False         False      287d
+node-tuning                                4.14.12   True        False         False      287d
+openshift-apiserver                        4.14.12   True        False         False      14d
+openshift-controller-manager               4.14.12   True        False         False      287d
+openshift-samples                          4.14.12   True        False         False      287d
+operator-lifecycle-manager                 4.14.12   True        False         False      287d
+operator-lifecycle-manager-catalog         4.14.12   True        False         False      287d
+operator-lifecycle-manager-packageserver   4.14.12   True        False         False      14d
+service-ca                                 4.14.12   True        False         False      287d
+storage                                    4.14.12   True        False         False      287d</pre>
+    </div>
+  </div>
+
+  <!-- 4. MCP -->
+  <div class="checklist-section">
+    <div class="section-header">
+      <div class="section-num">4</div>
+      <div class="section-title">MachineConfigPools (oc get mcp)</div>
+      <span class="section-badge ok">Updated</span>
+    </div>
+    <div class="section-body">
+      <pre>NAME      CONFIG                                              UPDATED   UPDATING   DEGRADED   MACHINECOUNT   READYMACHINECOUNT   UPDATEDMACHINECOUNT   UNAVAILABLEMACHINECOUNT   AGE
+master    rendered-master-a8c7d9e2b4f1c3d5e6a7b8c9    True      False      False      3              3                   3                     0                         287d
+worker    rendered-worker-f1e2d3c4b5a6978869574321    True      False      False      6              6                   6                     0                         287d</pre>
+    </div>
+  </div>
+
+  <!-- 5. DEPLOYMENT STATUS - OMNI -->
+  <div class="checklist-section">
+    <div class="section-header">
+      <div class="section-num">5</div>
+      <div class="section-title">Deployment Status — indomniprod</div>
+      <span class="section-badge ok">All Running</span>
+    </div>
+    <div class="section-body">
+      <pre>NAME                         READY   UP-TO-DATE   AVAILABLE   AGE    CONTAINERS               IMAGES                                                      SELECTOR
+omni-api-gateway             3/3     3            3           187d   omni-api-gateway         registry.dcprod.ib:5000/omni/api-gateway:3.2.1              app=omni-api-gateway
+omni-auth-service            2/2     2            2           187d   omni-auth-service        registry.dcprod.ib:5000/omni/auth-service:3.2.1             app=omni-auth-service
+omni-channel-service         3/3     3            3           187d   omni-channel-service     registry.dcprod.ib:5000/omni/channel-service:3.2.0          app=omni-channel-service
+omni-core-banking            3/3     3            3           187d   omni-core-banking        registry.dcprod.ib:5000/omni/core-banking:3.2.1             app=omni-core-banking
+omni-fund-transfer           2/2     2            2           187d   omni-fund-transfer       registry.dcprod.ib:5000/omni/fund-transfer:3.2.1            app=omni-fund-transfer
+omni-notification-svc        2/2     2            2           187d   omni-notification        registry.dcprod.ib:5000/omni/notification:3.2.0             app=omni-notification
+omni-payment-service         3/3     3            3           187d   omni-payment-service     registry.dcprod.ib:5000/omni/payment-service:3.2.1          app=omni-payment-service
+omni-report-service          2/2     2            2           187d   omni-report-service      registry.dcprod.ib:5000/omni/report-service:3.1.8           app=omni-report-service
+omni-scheduler               1/1     1            1           187d   omni-scheduler           registry.dcprod.ib:5000/omni/scheduler:3.2.0                app=omni-scheduler</pre>
+    </div>
+  </div>
+
+  <!-- 6. DEPLOYMENT STATUS - DLP -->
+  <div class="checklist-section">
+    <div class="section-header">
+      <div class="section-num">6</div>
+      <div class="section-title">Deployment Status — dlpprddcprod</div>
+      <span class="section-badge ok">All Running</span>
+    </div>
+    <div class="section-body">
+      <pre>NAME                         READY   UP-TO-DATE   AVAILABLE   AGE    CONTAINERS               IMAGES                                                      SELECTOR
+dlp-api-gateway              3/3     3            3           220d   dlp-api-gateway          registry.dcprod.ib:5000/dlp/api-gateway:2.8.4               app=dlp-api-gateway
+dlp-auth-service             2/2     2            2           220d   dlp-auth-service         registry.dcprod.ib:5000/dlp/auth-service:2.8.4              app=dlp-auth-service
+dlp-case-management          2/2     2            2           220d   dlp-case-mgmt            registry.dcprod.ib:5000/dlp/case-management:2.8.3           app=dlp-case-management
+dlp-document-service         2/2     2            2           220d   dlp-doc-service          registry.dcprod.ib:5000/dlp/document-service:2.8.4          app=dlp-document-service
+dlp-loan-engine              3/3     3            3           220d   dlp-loan-engine          registry.dcprod.ib:5000/dlp/loan-engine:2.8.4               app=dlp-loan-engine
+dlp-notification             2/2     2            2           220d   dlp-notification         registry.dcprod.ib:5000/dlp/notification:2.8.2              app=dlp-notification
+dlp-report-generator         1/1     1            1           220d   dlp-report-gen           registry.dcprod.ib:5000/dlp/report-generator:2.8.1          app=dlp-report-generator
+dlp-workflow-service         2/2     2            2           220d   dlp-workflow-svc         registry.dcprod.ib:5000/dlp/workflow-service:2.8.4           app=dlp-workflow-service</pre>
+    </div>
+  </div>
+
+  <!-- 7. DEPLOYMENT STATUS - CMS -->
+  <div class="checklist-section">
+    <div class="section-header">
+      <div class="section-num">7</div>
+      <div class="section-title">Deployment Status — cmsprod</div>
+      <span class="section-badge ok">All Running</span>
+    </div>
+    <div class="section-body">
+      <pre>NAME                         READY   UP-TO-DATE   AVAILABLE   AGE    CONTAINERS               IMAGES                                                      SELECTOR
+cms-api-gateway              2/2     2            2           165d   cms-api-gateway          registry.dcprod.ib:5000/cms/api-gateway:1.4.2               app=cms-api-gateway
+cms-auth-service             2/2     2            2           165d   cms-auth-service         registry.dcprod.ib:5000/cms/auth-service:1.4.2              app=cms-auth-service
+cms-complaint-engine         2/2     2            2           165d   cms-complaint-engine     registry.dcprod.ib:5000/cms/complaint-engine:1.4.1           app=cms-complaint-engine
+cms-notification             1/1     1            1           165d   cms-notification         registry.dcprod.ib:5000/cms/notification:1.4.0              app=cms-notification
+cms-report-service           1/1     1            1           165d   cms-report-service       registry.dcprod.ib:5000/cms/report-service:1.4.1            app=cms-report-service</pre>
+    </div>
+  </div>
+
+  <!-- 8. HPA STATUS - OMNI -->
+  <div class="checklist-section">
+    <div class="section-header">
+      <div class="section-num">8</div>
+      <div class="section-title">HPA Status — indomniprod</div>
+      <span class="section-badge ok">Scaling OK</span>
+    </div>
+    <div class="section-body">
+      <pre>NAME                         REFERENCE                           TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+omni-api-gateway-hpa         Deployment/omni-api-gateway         45%/70%         2         6         3          187d
+omni-core-banking-hpa        Deployment/omni-core-banking        52%/70%         2         6         3          187d
+omni-payment-service-hpa     Deployment/omni-payment-service     38%/70%         2         5         3          187d
+omni-channel-service-hpa     Deployment/omni-channel-service     41%/70%         2         5         3          187d</pre>
+    </div>
+  </div>
+
+  <!-- 9. HPA STATUS - DLP -->
+  <div class="checklist-section">
+    <div class="section-header">
+      <div class="section-num">9</div>
+      <div class="section-title">HPA Status — dlpprddcprod</div>
+      <span class="section-badge ok">Scaling OK</span>
+    </div>
+    <div class="section-body">
+      <pre>NAME                         REFERENCE                           TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+dlp-api-gateway-hpa          Deployment/dlp-api-gateway          32%/70%         2         5         3          220d
+dlp-loan-engine-hpa          Deployment/dlp-loan-engine          48%/70%         2         5         3          220d</pre>
+    </div>
+  </div>
+
+  <!-- 10. LOKI STACK -->
+  <div class="checklist-section">
+    <div class="section-header">
+      <div class="section-num">10</div>
+      <div class="section-title">LokiStack Status</div>
+      <span class="section-badge ok">Ready</span>
+    </div>
+    <div class="section-body">
+      <pre>NAME       READY   STATUS    AGE
+logging    True    Ready     142d
+
+--- Pods in openshift-logging ---
+NAME                                           READY   STATUS    RESTARTS   AGE
+cluster-logging-operator-7b9f8c4d5-xk2pq      1/1     Running   0          14d
+collector-2hk4m                                2/2     Running   0          14d
+collector-5xt8n                                2/2     Running   0          14d
+collector-8fm3r                                2/2     Running   0          14d
+collector-b7k9p                                2/2     Running   0          14d
+collector-d4m2n                                2/2     Running   0          14d
+collector-g6t8x                                2/2     Running   0          14d
+collector-j9w3k                                2/2     Running   0          14d
+collector-m2p5r                                2/2     Running   0          14d
+collector-q8n4t                                2/2     Running   0          14d
+logging-loki-compactor-0                       1/1     Running   0          14d
+logging-loki-distributor-5c8f9d7b4-k2m4n       1/1     Running   0          14d
+logging-loki-distributor-5c8f9d7b4-p7x9q       1/1     Running   0          14d
+logging-loki-gateway-6d4e8f2a1-h3j5k           2/2     Running   0          14d
+logging-loki-gateway-6d4e8f2a1-n8r2m           2/2     Running   0          14d
+logging-loki-index-gateway-0                   1/1     Running   0          14d
+logging-loki-index-gateway-1                   1/1     Running   0          14d
+logging-loki-ingester-0                        1/1     Running   0          14d
+logging-loki-ingester-1                        1/1     Running   0          14d
+logging-loki-querier-7f8c6d5e4-b2m9n          1/1     Running   0          14d
+logging-loki-querier-7f8c6d5e4-x4k7p          1/1     Running   0          14d
+logging-loki-query-frontend-8a3b7c2d1-j5n8r   1/1     Running   0          14d
+logging-loki-query-frontend-8a3b7c2d1-q9m3k   1/1     Running   0          14d</pre>
+    </div>
+  </div>
+
+  <!-- 11. FIRING ALERTS -->
+  <div class="checklist-section alert-section">
+    <div class="section-header">
+      <div class="section-num">11</div>
+      <div class="section-title">Firing Alerts (Alertmanager / Prometheus)</div>
+      <span class="section-badge warning">5 Active</span>
+    </div>
+    <div class="section-body">
+      <div class="alert-item">
+        <span class="alert-severity warning">warning</span>
+        <span class="alert-text"><span class="alert-name">KubeMemoryOvercommit</span> — Cluster has overcommitted memory resource requests by 12% and cannot tolerate node failure</span>
+      </div>
+      <div class="alert-item">
+        <span class="alert-severity warning">warning</span>
+        <span class="alert-text"><span class="alert-name">AlertmanagerClusterCrashlooping</span> ns=openshift-monitoring — Half or more of the Alertmanager instances within the same cluster are crashlooping</span>
+      </div>
+      <div class="alert-item">
+        <span class="alert-severity warning">warning</span>
+        <span class="alert-text"><span class="alert-name">PrometheusRemoteWriteBehind</span> ns=openshift-monitoring — Prometheus remote write is lagging behind for thanos-ruler</span>
+      </div>
+      <div class="alert-item">
+        <span class="alert-severity warning">warning</span>
+        <span class="alert-text"><span class="alert-name">TargetDown</span> ns=openshift-monitoring — 2.5% of the kube-state-metrics/kube-state-metrics targets in openshift-monitoring namespace are down</span>
+      </div>
+      <div class="alert-item">
+        <span class="alert-severity warning">warning</span>
+        <span class="alert-text"><span class="alert-name">ClusterOperatorDegraded</span> ns=openshift-cluster-version — Cluster operator insights has been degraded for 10 minutes</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="report-footer">
+    <span class="sig">Indian Bank — DC PROD Cluster</span> &middot; Health Check Report &middot; 03-03-2026 08:56 IST<br>
+    Generated automatically by OCP Health Check Script — No manual screenshots required
+  </div>
+
+</div>
+</body>
+</html>
